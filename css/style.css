@@ -1,0 +1,95 @@
+:root {
+  --bg: #0b1021;
+  --card: #131a33;
+  --text: #e6e9ff;
+  --muted: #9aa3c7;
+  --accent: #5ad1ff;
+  --brand: #7cf29c;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: radial-gradient(circle at 20% 20%, rgba(90, 209, 255, 0.12), transparent 30%), radial-gradient(circle at 80% 10%, rgba(124, 242, 156, 0.1), transparent 25%), var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  padding: 20px 28px;
+  background: linear-gradient(135deg, rgba(90, 209, 255, 0.12), rgba(124, 242, 156, 0.12));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent), var(--brand));
+  color: #051328;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow);
+}
+
+.brand-text {
+  line-height: 1.2;
+}
+
+.brand-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.brand-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.app-main {
+  padding: 32px 28px 56px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.intro h1 {
+  margin: 0 0 10px;
+  font-size: 32px;
+}
+
+.intro p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.jobs-area {
+  margin-top: 28px;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  min-height: 160px;
+}
+
+.placeholder {
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
