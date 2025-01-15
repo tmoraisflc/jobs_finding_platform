@@ -20,13 +20,68 @@
   <main class="app-main">
     <section class="intro">
       <h1>Explore vagas remotas</h1>
-      <p>Em breve: busca, filtros e favoritos alimentados pela API pública da Jobicy.</p>
+      <p>Em breve: busca, filtros e favoritos alimentados pela API publica da Jobicy.</p>
     </section>
 
     <section class="jobs-area">
-      <div class="placeholder">
-        <p>Lista de empregos aparecerá aqui.</p>
+      <div class="controls">
+        <form class="search-filters" action="#" onsubmit="return false;">
+          <label class="field">
+            <span class="field-label">Buscar</span>
+            <input type="search" name="q" placeholder="Titulo ou empresa" disabled>
+          </label>
+          <label class="field">
+            <span class="field-label">Categoria</span>
+            <select name="category" disabled>
+              <option value="">Todas</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field-label">Tipo</span>
+            <select name="type" disabled>
+              <option value="">Qualquer</option>
+              <option value="full-time">Full-time</option>
+              <option value="part-time">Part-time</option>
+              <option value="contract">Contract</option>
+            </select>
+          </label>
+          <button type="button" class="btn" disabled>Buscar</button>
+        </form>
       </div>
+
+      <div class="placeholder">
+        <p>Carregando estrutura da lista...</p>
+      </div>
+
+      <ul class="jobs-list">
+        <li class="job-card skeleton">
+          <div class="skeleton-line title"></div>
+          <div class="skeleton-line meta"></div>
+          <div class="skeleton-tags">
+            <span class="skeleton-pill"></span>
+            <span class="skeleton-pill mid"></span>
+            <span class="skeleton-pill long"></span>
+          </div>
+        </li>
+        <li class="job-card skeleton">
+          <div class="skeleton-line title"></div>
+          <div class="skeleton-line meta"></div>
+          <div class="skeleton-tags">
+            <span class="skeleton-pill"></span>
+            <span class="skeleton-pill mid"></span>
+            <span class="skeleton-pill long"></span>
+          </div>
+        </li>
+        <li class="job-card skeleton">
+          <div class="skeleton-line title"></div>
+          <div class="skeleton-line meta"></div>
+          <div class="skeleton-tags">
+            <span class="skeleton-pill"></span>
+            <span class="skeleton-pill mid"></span>
+            <span class="skeleton-pill long"></span>
+          </div>
+        </li>
+      </ul>
     </section>
   </main>
 
