@@ -146,6 +146,18 @@ body {
   font-size: 15px;
 }
 
+.placeholder.loading {
+  color: var(--muted);
+}
+
+.placeholder.success {
+  color: var(--brand);
+}
+
+.placeholder.error {
+  color: #ff9b9b;
+}
+
 .jobs-list {
   list-style: none;
   padding: 0;
