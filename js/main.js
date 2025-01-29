@@ -33,6 +33,37 @@ function resetListContainer() {
   ui.list.removeClass("is-populated");
 }
 
+function renderJobsBasic(jobs) {
+  if (!Array.isArray(jobs) || !jobs.length) {
+    showPlaceholder("Nenhuma vaga recebida ainda.", "error");
+    return;
+  }
+
+  resetListContainer();
+
+  const fragment = $(document.createDocumentFragment());
+
+  jobs.forEach((job) => {
+    const $card = $(`
+      <li class="job-card">
+        <div class="job-header">
+          <p class="job-title">${job.title || "Sem título"}</p>
+          <p class="job-company">${job.companyName || "Empresa não informada"}</p>
+        </div>
+        <div class="job-meta">
+          <span class="job-location">${job.location || "Remoto"}</span>
+          <span class="job-date">${job.date || "-"}</span>
+        </div>
+      </li>
+    `);
+    fragment.append($card);
+  });
+
+  ui.list.append(fragment);
+  ui.list.addClass("is-populated");
+  hidePlaceholder();
+}
+
 function fetchJobs() {
   state.loading = true;
   state.error = null;
@@ -41,11 +72,8 @@ function fetchJobs() {
   $.getJSON(API_URL)
     .done((data) => {
       state.jobs = data?.jobs || [];
-      showPlaceholder(
-        `Dados carregados (${state.jobs.length} vagas). Renderização virá na próxima etapa.`,
-        "success"
-      );
-      // Próximos commits usarão resetListContainer() + render dos cards.
+      showPlaceholder(`Dados carregados (${state.jobs.length} vagas). Renderizando...`, "success");
+      renderJobsBasic(state.jobs.slice(0, 15)); // carga inicial limitada; ajustes virão depois
       console.log("Jobs recebidos (preview):", state.jobs.slice(0, 3));
     })
     .fail((jqXHR, textStatus, errorThrown) => {
