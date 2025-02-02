@@ -11,6 +11,30 @@ const ui = {
   list: null,
 };
 
+const format = {
+  dateISOToDisplay(iso) {
+    if (!iso) return "-";
+    const date = new Date(iso);
+    if (Number.isNaN(date)) return iso;
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  },
+  dateRelative(iso) {
+    const date = new Date(iso);
+    if (Number.isNaN(date)) return "";
+    const diffMs = Date.now() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "hoje";
+    if (diffDays === 1) return "ontem";
+    if (diffDays < 7) return `há ${diffDays} dias`;
+    const diffWeeks = Math.floor(diffDays / 7);
+    return diffWeeks === 1 ? "há 1 semana" : `há ${diffWeeks} semanas`;
+  },
+};
+
 function initUIRefs() {
   ui.placeholder = $(".placeholder");
   ui.list = $(".jobs-list");
@@ -44,6 +68,9 @@ function renderJobsBasic(jobs) {
   const fragment = $(document.createDocumentFragment());
 
   jobs.forEach((job) => {
+    const dateDisplay = format.dateISOToDisplay(job.date);
+    const relative = format.dateRelative(job.date);
+
     const $card = $(`
       <li class="job-card">
         <div class="job-header">
@@ -52,7 +79,7 @@ function renderJobsBasic(jobs) {
         </div>
         <div class="job-meta">
           <span class="job-location">${job.location || "Remoto"}</span>
-          <span class="job-date">${job.date || "-"}</span>
+          <span class="job-date" title="${dateDisplay}">${relative || dateDisplay}</span>
         </div>
       </li>
     `);
