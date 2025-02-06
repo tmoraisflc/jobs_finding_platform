@@ -197,6 +197,16 @@ body {
   gap: 12px;
   color: var(--muted);
   font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.job-salary {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(90, 209, 255, 0.14);
+  color: var(--text);
+  border: 1px solid rgba(90, 209, 255, 0.2);
+  font-weight: 600;
 }
 
 .is-populated {

@@ -12,6 +12,23 @@ const ui = {
 };
 
 const format = {
+  salaryRange(min, max, currency = "USD") {
+    const cur = currency.toUpperCase();
+    const fmt = (val) =>
+      typeof val === "number"
+        ? val >= 1000
+          ? `${(val / 1000).toFixed(val % 1000 === 0 ? 0 : 1)}k`
+          : `${val}`
+        : null;
+
+    const minFmt = fmt(min);
+    const maxFmt = fmt(max);
+
+    if (minFmt && maxFmt) return `${cur}$ ${minFmt} - ${maxFmt}`;
+    if (minFmt) return `${cur}$ ${minFmt}+`;
+    if (maxFmt) return `${cur}$ até ${maxFmt}`;
+    return "Faixa não informada";
+  },
   dateISOToDisplay(iso) {
     if (!iso) return "-";
     const date = new Date(iso);
@@ -70,6 +87,7 @@ function renderJobsBasic(jobs) {
   jobs.forEach((job) => {
     const dateDisplay = format.dateISOToDisplay(job.date);
     const relative = format.dateRelative(job.date);
+    const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
 
     const $card = $(`
       <li class="job-card">
@@ -80,6 +98,7 @@ function renderJobsBasic(jobs) {
         <div class="job-meta">
           <span class="job-location">${job.location || "Remoto"}</span>
           <span class="job-date" title="${dateDisplay}">${relative || dateDisplay}</span>
+          <span class="job-salary">${salaryText}</span>
         </div>
       </li>
     `);
