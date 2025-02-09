@@ -12,6 +12,11 @@ const ui = {
 };
 
 const format = {
+  truncate(text, max = 220) {
+    if (!text) return { short: "Descrição não informada.", truncated: false };
+    if (text.length <= max) return { short: text, truncated: false };
+    return { short: text.slice(0, max).trimEnd() + "...", truncated: true };
+  },
   salaryRange(min, max, currency = "USD") {
     const cur = currency.toUpperCase();
     const fmt = (val) =>
@@ -88,6 +93,7 @@ function renderJobsBasic(jobs) {
     const dateDisplay = format.dateISOToDisplay(job.date);
     const relative = format.dateRelative(job.date);
     const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+    const desc = format.truncate(job.description, 240);
 
     const $card = $(`
       <li class="job-card">
@@ -100,6 +106,14 @@ function renderJobsBasic(jobs) {
           <span class="job-date" title="${dateDisplay}">${relative || dateDisplay}</span>
           <span class="job-salary">${salaryText}</span>
         </div>
+        <p class="job-desc" data-full="${(job.description || "").replace(/"/g, "&quot;")}">
+          ${desc.short}
+        </p>
+        ${
+          desc.truncated
+            ? '<button type="button" class="btn-inline see-more">Ver mais</button>'
+            : ""
+        }
       </li>
     `);
     fragment.append($card);
@@ -135,4 +149,20 @@ function fetchJobs() {
 $(function () {
   initUIRefs();
   fetchJobs();
+
+  ui.list?.on("click", ".see-more", function () {
+    const $btn = $(this);
+    const $card = $btn.closest(".job-card");
+    const $desc = $card.find(".job-desc");
+    const full = $desc.data("full");
+
+    if ($btn.data("expanded")) {
+      const truncated = format.truncate(full, 240);
+      $desc.text(truncated.short);
+      $btn.text("Ver mais").data("expanded", false);
+    } else {
+      $desc.text(full);
+      $btn.text("Ver menos").data("expanded", true);
+    }
+  });
 });
