@@ -4,6 +4,7 @@ const state = {
   jobs: [],
   loading: false,
   error: null,
+  searchTerm: "",
 };
 
 const ui = {
@@ -60,6 +61,8 @@ const format = {
 function initUIRefs() {
   ui.placeholder = $(".placeholder");
   ui.list = $(".jobs-list");
+  ui.searchInput = $("input[name='q']");
+  ui.searchButton = $(".search-filters .btn");
 }
 
 function showPlaceholder(message, variant = "loading") {
@@ -81,7 +84,7 @@ function resetListContainer() {
 
 function renderJobsBasic(jobs) {
   if (!Array.isArray(jobs) || !jobs.length) {
-    showPlaceholder("Nenhuma vaga recebida ainda.", "error");
+    showPlaceholder("Nenhuma vaga encontrada.", "error");
     return;
   }
 
@@ -124,6 +127,16 @@ function renderJobsBasic(jobs) {
   hidePlaceholder();
 }
 
+function filterJobsBySearch(jobs, term) {
+  if (!term) return jobs;
+  const q = term.trim().toLowerCase();
+  return jobs.filter((job) => {
+    const title = (job.title || "").toLowerCase();
+    const company = (job.companyName || "").toLowerCase();
+    return title.includes(q) || company.includes(q);
+  });
+}
+
 function fetchJobs() {
   state.loading = true;
   state.error = null;
@@ -133,7 +146,8 @@ function fetchJobs() {
     .done((data) => {
       state.jobs = data?.jobs || [];
       showPlaceholder(`Dados carregados (${state.jobs.length} vagas). Renderizando...`, "success");
-      renderJobsBasic(state.jobs.slice(0, 15)); // carga inicial limitada; ajustes virão depois
+      const initial = filterJobsBySearch(state.jobs.slice(0, 15), state.searchTerm);
+      renderJobsBasic(initial);
       console.log("Jobs recebidos (preview):", state.jobs.slice(0, 3));
     })
     .fail((jqXHR, textStatus, errorThrown) => {
@@ -164,5 +178,19 @@ $(function () {
       $desc.text(full);
       $btn.text("Ver menos").data("expanded", true);
     }
+  });
+
+  ui.searchButton?.on("click", () => {
+    const term = ui.searchInput.val();
+    state.searchTerm = term;
+    const filtered = filterJobsBySearch(state.jobs, term);
+    renderJobsBasic(filtered.slice(0, 20));
+  });
+
+  ui.searchInput?.on("input", () => {
+    const term = ui.searchInput.val();
+    state.searchTerm = term;
+    const filtered = filterJobsBySearch(state.jobs, term);
+    renderJobsBasic(filtered.slice(0, 20));
   });
 });
