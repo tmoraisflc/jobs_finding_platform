@@ -10,6 +10,9 @@ const state = {
 const ui = {
   placeholder: null,
   list: null,
+  searchInput: null,
+  searchButton: null,
+  categorySelect: null,
 };
 
 const format = {
@@ -63,6 +66,7 @@ function initUIRefs() {
   ui.list = $(".jobs-list");
   ui.searchInput = $("input[name='q']");
   ui.searchButton = $(".search-filters .btn");
+  ui.categorySelect = $("select[name='category']");
 }
 
 function showPlaceholder(message, variant = "loading") {
@@ -137,6 +141,34 @@ function filterJobsBySearch(jobs, term) {
   });
 }
 
+function extractCategories(jobs) {
+  const set = new Set();
+  jobs.forEach((job) => {
+    const candidates = []
+      .concat(job.jobIndustry || [])
+      .concat(job.jobCategory || [])
+      .concat(job.categories || []);
+
+    candidates.forEach((c) => {
+      if (typeof c === "string" && c.trim()) {
+        set.add(c.trim());
+      }
+    });
+  });
+  return Array.from(set).sort((a, b) => a.localeCompare(b, "pt-BR"));
+}
+
+function populateCategories(jobs) {
+  if (!ui.categorySelect?.length) return;
+  const options = extractCategories(jobs);
+  const frag = $(document.createDocumentFragment());
+  frag.append('<option value="">Todas</option>');
+  options.forEach((opt) => {
+    frag.append(`<option value="${opt}">${opt}</option>`);
+  });
+  ui.categorySelect.empty().append(frag);
+}
+
 function fetchJobs() {
   state.loading = true;
   state.error = null;
@@ -146,6 +178,7 @@ function fetchJobs() {
     .done((data) => {
       state.jobs = data?.jobs || [];
       showPlaceholder(`Dados carregados (${state.jobs.length} vagas). Renderizando...`, "success");
+      populateCategories(state.jobs);
       const initial = filterJobsBySearch(state.jobs.slice(0, 15), state.searchTerm);
       renderJobsBasic(initial);
       console.log("Jobs recebidos (preview):", state.jobs.slice(0, 3));
