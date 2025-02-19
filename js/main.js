@@ -5,6 +5,7 @@ const state = {
   loading: false,
   error: null,
   searchTerm: "",
+  selectedCategory: "",
 };
 
 const ui = {
@@ -141,6 +142,25 @@ function filterJobsBySearch(jobs, term) {
   });
 }
 
+function filterJobsByCategory(jobs, category) {
+  if (!category) return jobs;
+  const target = category.toLowerCase();
+  return jobs.filter((job) => {
+    const cats = []
+      .concat(job.jobIndustry || [])
+      .concat(job.jobCategory || [])
+      .concat(job.categories || []);
+
+    return cats.some((c) => typeof c === "string" && c.toLowerCase() === target);
+  });
+}
+
+function applyFilters(jobs) {
+  let result = filterJobsBySearch(jobs, state.searchTerm);
+  result = filterJobsByCategory(result, state.selectedCategory);
+  return result;
+}
+
 function extractCategories(jobs) {
   const set = new Set();
   jobs.forEach((job) => {
@@ -179,7 +199,7 @@ function fetchJobs() {
       state.jobs = data?.jobs || [];
       showPlaceholder(`Dados carregados (${state.jobs.length} vagas). Renderizando...`, "success");
       populateCategories(state.jobs);
-      const initial = filterJobsBySearch(state.jobs.slice(0, 15), state.searchTerm);
+      const initial = applyFilters(state.jobs).slice(0, 15);
       renderJobsBasic(initial);
       console.log("Jobs recebidos (preview):", state.jobs.slice(0, 3));
     })
@@ -216,14 +236,20 @@ $(function () {
   ui.searchButton?.on("click", () => {
     const term = ui.searchInput.val();
     state.searchTerm = term;
-    const filtered = filterJobsBySearch(state.jobs, term);
+    const filtered = applyFilters(state.jobs);
     renderJobsBasic(filtered.slice(0, 20));
   });
 
   ui.searchInput?.on("input", () => {
     const term = ui.searchInput.val();
     state.searchTerm = term;
-    const filtered = filterJobsBySearch(state.jobs, term);
+    const filtered = applyFilters(state.jobs);
+    renderJobsBasic(filtered.slice(0, 20));
+  });
+
+  ui.categorySelect?.on("change", () => {
+    state.selectedCategory = ui.categorySelect.val();
+    const filtered = applyFilters(state.jobs);
     renderJobsBasic(filtered.slice(0, 20));
   });
 });
