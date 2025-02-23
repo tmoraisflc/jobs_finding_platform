@@ -6,6 +6,7 @@ const state = {
   error: null,
   searchTerm: "",
   selectedCategory: "",
+  selectedType: "",
 };
 
 const ui = {
@@ -14,6 +15,7 @@ const ui = {
   searchInput: null,
   searchButton: null,
   categorySelect: null,
+  typeSelect: null,
 };
 
 const format = {
@@ -68,6 +70,7 @@ function initUIRefs() {
   ui.searchInput = $("input[name='q']");
   ui.searchButton = $(".search-filters .btn");
   ui.categorySelect = $("select[name='category']");
+  ui.typeSelect = $("select[name='type']");
 }
 
 function showPlaceholder(message, variant = "loading") {
@@ -102,6 +105,7 @@ function renderJobsBasic(jobs) {
     const relative = format.dateRelative(job.date);
     const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
     const desc = format.truncate(job.description, 240);
+    const jobType = job.jobType || "Tipo n\u00e3o informado";
 
     const $card = $(`
       <li class="job-card">
@@ -113,6 +117,7 @@ function renderJobsBasic(jobs) {
           <span class="job-location">${job.location || "Remoto"}</span>
           <span class="job-date" title="${dateDisplay}">${relative || dateDisplay}</span>
           <span class="job-salary">${salaryText}</span>
+          <span class="job-type">${jobType}</span>
         </div>
         <p class="job-desc" data-full="${(job.description || "").replace(/"/g, "&quot;")}">
           ${desc.short}
@@ -155,9 +160,19 @@ function filterJobsByCategory(jobs, category) {
   });
 }
 
+function filterJobsByType(jobs, type) {
+  if (!type) return jobs;
+  const target = type.toLowerCase();
+  return jobs.filter((job) => {
+    const jt = (job.jobType || "").toLowerCase();
+    return jt.includes(target);
+  });
+}
+
 function applyFilters(jobs) {
   let result = filterJobsBySearch(jobs, state.searchTerm);
   result = filterJobsByCategory(result, state.selectedCategory);
+  result = filterJobsByType(result, state.selectedType);
   return result;
 }
 
@@ -249,6 +264,12 @@ $(function () {
 
   ui.categorySelect?.on("change", () => {
     state.selectedCategory = ui.categorySelect.val();
+    const filtered = applyFilters(state.jobs);
+    renderJobsBasic(filtered.slice(0, 20));
+  });
+
+  ui.typeSelect?.on("change", () => {
+    state.selectedType = ui.typeSelect.val();
     const filtered = applyFilters(state.jobs);
     renderJobsBasic(filtered.slice(0, 20));
   });
