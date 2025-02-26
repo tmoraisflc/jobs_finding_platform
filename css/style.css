@@ -158,6 +158,12 @@ body {
   color: #ff9b9b;
 }
 
+.placeholder .emoji {
+  display: block;
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
 .jobs-list {
   list-style: none;
   padding: 0;

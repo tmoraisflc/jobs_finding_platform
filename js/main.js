@@ -92,7 +92,8 @@ function resetListContainer() {
 
 function renderJobsBasic(jobs) {
   if (!Array.isArray(jobs) || !jobs.length) {
-    showPlaceholder("Nenhuma vaga encontrada.", "error");
+    resetListContainer();
+    showPlaceholder("Nenhuma vaga encontrada para os filtros atuais.", "error");
     return;
   }
 
