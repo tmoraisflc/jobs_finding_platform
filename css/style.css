@@ -256,14 +256,14 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
   transform: translateX(-100%);
   animation: shimmer 1.6s infinite;
 }
 
 .skeleton-line {
   height: 12px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 8px;
   margin-bottom: 10px;
 }
@@ -286,7 +286,7 @@ body {
 .skeleton-pill {
   height: 10px;
   width: 54px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.16);
   border-radius: 999px;
 }
 

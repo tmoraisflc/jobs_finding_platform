@@ -90,6 +90,25 @@ function resetListContainer() {
   ui.list.removeClass("is-populated");
 }
 
+function renderSkeletons(count = 4) {
+  resetListContainer();
+  const fragment = $(document.createDocumentFragment());
+  for (let i = 0; i < count; i++) {
+    fragment.append(`
+      <li class="job-card skeleton">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line meta"></div>
+        <div class="skeleton-tags">
+          <span class="skeleton-pill"></span>
+          <span class="skeleton-pill mid"></span>
+          <span class="skeleton-pill long"></span>
+        </div>
+      </li>
+    `);
+  }
+  ui.list.append(fragment);
+}
+
 function renderJobsBasic(jobs) {
   if (!Array.isArray(jobs) || !jobs.length) {
     resetListContainer();
@@ -208,6 +227,7 @@ function populateCategories(jobs) {
 function fetchJobs() {
   state.loading = true;
   state.error = null;
+  renderSkeletons();
   showPlaceholder("Carregando vagas remotas...", "loading");
 
   $.getJSON(API_URL)
