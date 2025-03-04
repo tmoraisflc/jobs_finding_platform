@@ -7,6 +7,7 @@ const state = {
   searchTerm: "",
   selectedCategory: "",
   selectedType: "",
+  visibleCount: 20,
 };
 
 const ui = {
@@ -16,6 +17,7 @@ const ui = {
   searchButton: null,
   categorySelect: null,
   typeSelect: null,
+  loadMoreBtn: null,
 };
 
 const format = {
@@ -71,6 +73,7 @@ function initUIRefs() {
   ui.searchButton = $(".search-filters .btn");
   ui.categorySelect = $("select[name='category']");
   ui.typeSelect = $("select[name='type']");
+  ui.loadMoreBtn = $(".load-more");
 }
 
 function showPlaceholder(message, variant = "loading") {
@@ -196,6 +199,17 @@ function applyFilters(jobs) {
   return result;
 }
 
+function updateList() {
+  const filtered = applyFilters(state.jobs);
+  const slice = filtered.slice(0, state.visibleCount);
+  renderJobsBasic(slice);
+
+  if (ui.loadMoreBtn) {
+    ui.loadMoreBtn.prop("hidden", filtered.length <= state.visibleCount);
+    ui.loadMoreBtn.prop("disabled", state.loading);
+  }
+}
+
 function extractCategories(jobs) {
   const set = new Set();
   jobs.forEach((job) => {
@@ -235,8 +249,8 @@ function fetchJobs() {
       state.jobs = data?.jobs || [];
       showPlaceholder(`Dados carregados (${state.jobs.length} vagas). Renderizando...`, "success");
       populateCategories(state.jobs);
-      const initial = applyFilters(state.jobs).slice(0, 15);
-      renderJobsBasic(initial);
+      state.visibleCount = 20;
+      updateList();
       console.log("Jobs recebidos (preview):", state.jobs.slice(0, 3));
     })
     .fail((jqXHR, textStatus, errorThrown) => {
@@ -272,26 +286,31 @@ $(function () {
   ui.searchButton?.on("click", () => {
     const term = ui.searchInput.val();
     state.searchTerm = term;
-    const filtered = applyFilters(state.jobs);
-    renderJobsBasic(filtered.slice(0, 20));
+    state.visibleCount = 20;
+    updateList();
   });
 
   ui.searchInput?.on("input", () => {
     const term = ui.searchInput.val();
     state.searchTerm = term;
-    const filtered = applyFilters(state.jobs);
-    renderJobsBasic(filtered.slice(0, 20));
+    state.visibleCount = 20;
+    updateList();
   });
 
   ui.categorySelect?.on("change", () => {
     state.selectedCategory = ui.categorySelect.val();
-    const filtered = applyFilters(state.jobs);
-    renderJobsBasic(filtered.slice(0, 20));
+    state.visibleCount = 20;
+    updateList();
   });
 
   ui.typeSelect?.on("change", () => {
     state.selectedType = ui.typeSelect.val();
-    const filtered = applyFilters(state.jobs);
-    renderJobsBasic(filtered.slice(0, 20));
+    state.visibleCount = 20;
+    updateList();
+  });
+
+  ui.loadMoreBtn?.on("click", () => {
+    state.visibleCount += 10;
+    updateList();
   });
 });
