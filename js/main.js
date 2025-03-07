@@ -8,6 +8,7 @@ const state = {
   selectedCategory: "",
   selectedType: "",
   visibleCount: 20,
+  lastAutoLoadMs: 0,
 };
 
 const ui = {
@@ -210,6 +211,24 @@ function updateList() {
   }
 }
 
+function handleInfiniteScroll() {
+  if (!ui.loadMoreBtn || ui.loadMoreBtn.prop("hidden")) return;
+  const now = Date.now();
+  if (now - state.lastAutoLoadMs < 600) return;
+
+  const scrollPosition = window.scrollY + window.innerHeight;
+  const documentHeight = document.documentElement.scrollHeight;
+
+  if (documentHeight - scrollPosition < 320) {
+    const total = applyFilters(state.jobs).length;
+    if (state.visibleCount < total) {
+      state.visibleCount += 10;
+      state.lastAutoLoadMs = now;
+      updateList();
+    }
+  }
+}
+
 function extractCategories(jobs) {
   const set = new Set();
   jobs.forEach((job) => {
@@ -313,4 +332,6 @@ $(function () {
     state.visibleCount += 10;
     updateList();
   });
+
+  $(window).on("scroll", handleInfiniteScroll);
 });
