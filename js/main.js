@@ -75,6 +75,10 @@ function initUIRefs() {
   ui.categorySelect = $("select[name='category']");
   ui.typeSelect = $("select[name='type']");
   ui.loadMoreBtn = $(".load-more");
+  ui.modal = $(".job-modal");
+  ui.modalTitle = $(".job-modal .modal-title");
+  ui.modalCompany = $(".job-modal .modal-company");
+  ui.modalBody = $(".job-modal .modal-body");
 }
 
 function showPlaceholder(message, variant = "loading") {
@@ -131,8 +135,10 @@ function renderJobsBasic(jobs) {
     const desc = format.truncate(job.description, 240);
     const jobType = job.jobType || "Tipo n\u00e3o informado";
 
+    const cardId = job.id || job.url || job.title;
+
     const $card = $(`
-      <li class="job-card">
+      <li class="job-card" data-id="${cardId}">
         <div class="job-header">
           <p class="job-title">${job.title || "Sem título"}</p>
           <p class="job-company">${job.companyName || "Empresa não informada"}</p>
@@ -229,6 +235,23 @@ function handleInfiniteScroll() {
   }
 }
 
+function openModal(job) {
+  if (!job || !ui.modal) return;
+  ui.modalTitle.text(job.title || "Sem título");
+  ui.modalCompany.text(job.companyName || "Empresa não informada");
+  ui.modalBody.html(`
+    <p><strong>Local:</strong> ${job.location || "Remoto"}</p>
+    <p><strong>Tipo:</strong> ${job.jobType || "N/D"}</p>
+    <p><strong>Publicado em:</strong> ${format.dateISOToDisplay(job.date)}</p>
+    <p style="margin-top:12px;">Detalhes completos virão na próxima etapa.</p>
+  `);
+  ui.modal.removeClass("hidden");
+}
+
+function closeModal() {
+  ui.modal?.addClass("hidden");
+}
+
 function extractCategories(jobs) {
   const set = new Set();
   jobs.forEach((job) => {
@@ -286,7 +309,8 @@ $(function () {
   initUIRefs();
   fetchJobs();
 
-  ui.list?.on("click", ".see-more", function () {
+  ui.list?.on("click", ".see-more", function (e) {
+    e.stopPropagation();
     const $btn = $(this);
     const $card = $btn.closest(".job-card");
     const $desc = $card.find(".job-desc");
@@ -334,4 +358,12 @@ $(function () {
   });
 
   $(window).on("scroll", handleInfiniteScroll);
+
+  ui.list?.on("click", ".job-card", function () {
+    const id = $(this).data("id");
+    const job = state.jobs.find((j) => j.id === id || j.url === id || j.title === id);
+    openModal(job);
+  });
+
+  $(".job-modal .modal-close, .modal-backdrop").on("click", closeModal);
 });
