@@ -253,6 +253,47 @@ body {
   line-height: 1.5;
 }
 
+.modal-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 6px 0 14px;
+}
+
+.chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(90, 209, 255, 0.16);
+  border: 1px solid rgba(90, 209, 255, 0.24);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.chip.ghost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.modal-description {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.modal-actions {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+
+.apply-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
 .job-header {
   display: flex;
   flex-direction: column;

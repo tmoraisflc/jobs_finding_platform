@@ -239,11 +239,25 @@ function openModal(job) {
   if (!job || !ui.modal) return;
   ui.modalTitle.text(job.title || "Sem título");
   ui.modalCompany.text(job.companyName || "Empresa não informada");
+  const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+  const categories = extractCategories([job]);
+  const descHTML = job.description || "<p>Descrição indisponível.</p>";
+
   ui.modalBody.html(`
-    <p><strong>Local:</strong> ${job.location || "Remoto"}</p>
-    <p><strong>Tipo:</strong> ${job.jobType || "N/D"}</p>
-    <p><strong>Publicado em:</strong> ${format.dateISOToDisplay(job.date)}</p>
-    <p style="margin-top:12px;">Detalhes completos virão na próxima etapa.</p>
+    <div class="modal-chips">
+      <span class="chip">${job.jobType || "Tipo não informado"}</span>
+      <span class="chip">${job.location || "Remoto"}</span>
+      <span class="chip">${salaryText}</span>
+      ${categories.map((c) => `<span class="chip ghost">${c}</span>`).join("")}
+    </div>
+    <div class="modal-description">${descHTML}</div>
+    <div class="modal-actions">
+      ${
+        job.url
+          ? `<a class="btn apply-link" href="${job.url}" target="_blank" rel="noopener noreferrer">Aplicar</a>`
+          : `<button class="btn" disabled>Link não disponível</button>`
+      }
+    </div>
   `);
   ui.modal.removeClass("hidden");
 }
@@ -366,4 +380,8 @@ $(function () {
   });
 
   $(".job-modal .modal-close, .modal-backdrop").on("click", closeModal);
+
+  $(document).on("keyup", (e) => {
+    if (e.key === "Escape") closeModal();
+  });
 });
