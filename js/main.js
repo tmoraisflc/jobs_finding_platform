@@ -1,4 +1,4 @@
-const API_URL = "https://jobicy.com/api/v2/remote-jobs";
+﻿const API_URL = "https://jobicy.com/api/v2/remote-jobs";
 
 const state = {
   jobs: [],
@@ -9,6 +9,7 @@ const state = {
   selectedType: "",
   visibleCount: 20,
   lastAutoLoadMs: 0,
+  favorites: new Set(),
 };
 
 const ui = {
@@ -19,11 +20,15 @@ const ui = {
   categorySelect: null,
   typeSelect: null,
   loadMoreBtn: null,
+  modal: null,
+  modalTitle: null,
+  modalCompany: null,
+  modalBody: null,
 };
 
 const format = {
   truncate(text, max = 220) {
-    if (!text) return { short: "Descrição não informada.", truncated: false };
+    if (!text) return { short: "Descricao nao informada.", truncated: false };
     if (text.length <= max) return { short: text, truncated: false };
     return { short: text.slice(0, max).trimEnd() + "...", truncated: true };
   },
@@ -41,8 +46,8 @@ const format = {
 
     if (minFmt && maxFmt) return `${cur}$ ${minFmt} - ${maxFmt}`;
     if (minFmt) return `${cur}$ ${minFmt}+`;
-    if (maxFmt) return `${cur}$ até ${maxFmt}`;
-    return "Faixa não informada";
+    if (maxFmt) return `${cur}$ ate ${maxFmt}`;
+    return "Faixa nao informada";
   },
   dateISOToDisplay(iso) {
     if (!iso) return "-";
@@ -61,9 +66,9 @@ const format = {
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     if (diffDays === 0) return "hoje";
     if (diffDays === 1) return "ontem";
-    if (diffDays < 7) return `há ${diffDays} dias`;
+    if (diffDays < 7) return `ha ${diffDays} dias`;
     const diffWeeks = Math.floor(diffDays / 7);
-    return diffWeeks === 1 ? "há 1 semana" : `há ${diffWeeks} semanas`;
+    return diffWeeks === 1 ? "ha 1 semana" : `ha ${diffWeeks} semanas`;
   },
 };
 
@@ -79,6 +84,22 @@ function initUIRefs() {
   ui.modalTitle = $(".job-modal .modal-title");
   ui.modalCompany = $(".job-modal .modal-company");
   ui.modalBody = $(".job-modal .modal-body");
+}
+
+function loadFavorites() {
+  try {
+    const raw = localStorage.getItem("jobsFavs");
+    if (!raw) return;
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) state.favorites = new Set(arr);
+  } catch (err) {
+    console.warn("Nao foi possivel ler favoritos:", err);
+  }
+}
+
+function saveFavorites() {
+  const arr = Array.from(state.favorites);
+  localStorage.setItem("jobsFavs", JSON.stringify(arr));
 }
 
 function showPlaceholder(message, variant = "loading") {
@@ -133,15 +154,16 @@ function renderJobsBasic(jobs) {
     const relative = format.dateRelative(job.date);
     const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
     const desc = format.truncate(job.description, 240);
-    const jobType = job.jobType || "Tipo n\u00e3o informado";
+    const jobType = job.jobType || "Tipo nao informado";
 
     const cardId = job.id || job.url || job.title;
+    const isFav = state.favorites.has(cardId);
 
-    const $card = $(`
-      <li class="job-card" data-id="${cardId}">
+    const $card = $(
+      `<li class="job-card${isFav ? " is-fav" : ""}" data-id="${cardId}">
         <div class="job-header">
-          <p class="job-title">${job.title || "Sem título"}</p>
-          <p class="job-company">${job.companyName || "Empresa não informada"}</p>
+          <p class="job-title">${job.title || "Sem titulo"}</p>
+          <p class="job-company">${job.companyName || "Empresa nao informada"}</p>
         </div>
         <div class="job-meta">
           <span class="job-location">${job.location || "Remoto"}</span>
@@ -149,16 +171,15 @@ function renderJobsBasic(jobs) {
           <span class="job-salary">${salaryText}</span>
           <span class="job-type">${jobType}</span>
         </div>
-        <p class="job-desc" data-full="${(job.description || "").replace(/"/g, "&quot;")}">
+        <button class="fav-toggle" type="button" aria-label="Favoritar">
+          ${isFav ? "★" : "☆"}
+        </button>
+        <p class="job-desc" data-full="${(job.description || "").replace(/\"/g, "&quot;")}">
           ${desc.short}
         </p>
-        ${
-          desc.truncated
-            ? '<button type="button" class="btn-inline see-more">Ver mais</button>'
-            : ""
-        }
-      </li>
-    `);
+        ${desc.truncated ? '<button type="button" class="btn-inline see-more">Ver mais</button>' : ""}
+      </li>`
+    );
     fragment.append($card);
   });
 
@@ -235,37 +256,6 @@ function handleInfiniteScroll() {
   }
 }
 
-function openModal(job) {
-  if (!job || !ui.modal) return;
-  ui.modalTitle.text(job.title || "Sem título");
-  ui.modalCompany.text(job.companyName || "Empresa não informada");
-  const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
-  const categories = extractCategories([job]);
-  const descHTML = job.description || "<p>Descrição indisponível.</p>";
-
-  ui.modalBody.html(`
-    <div class="modal-chips">
-      <span class="chip">${job.jobType || "Tipo não informado"}</span>
-      <span class="chip">${job.location || "Remoto"}</span>
-      <span class="chip">${salaryText}</span>
-      ${categories.map((c) => `<span class="chip ghost">${c}</span>`).join("")}
-    </div>
-    <div class="modal-description">${descHTML}</div>
-    <div class="modal-actions">
-      ${
-        job.url
-          ? `<a class="btn apply-link" href="${job.url}" target="_blank" rel="noopener noreferrer">Aplicar</a>`
-          : `<button class="btn" disabled>Link não disponível</button>`
-      }
-    </div>
-  `);
-  ui.modal.removeClass("hidden");
-}
-
-function closeModal() {
-  ui.modal?.addClass("hidden");
-}
-
 function extractCategories(jobs) {
   const set = new Set();
   jobs.forEach((job) => {
@@ -292,6 +282,37 @@ function populateCategories(jobs) {
     frag.append(`<option value="${opt}">${opt}</option>`);
   });
   ui.categorySelect.empty().append(frag);
+}
+
+function openModal(job) {
+  if (!job || !ui.modal) return;
+  ui.modalTitle.text(job.title || "Sem titulo");
+  ui.modalCompany.text(job.companyName || "Empresa nao informada");
+  const salaryText = format.salaryRange(job.salaryMin, job.salaryMax, job.salaryCurrency);
+  const categories = extractCategories([job]);
+  const descHTML = job.description || "<p>Descricao indisponivel.</p>";
+
+  ui.modalBody.html(`
+    <div class="modal-chips">
+      <span class="chip">${job.jobType || "Tipo nao informado"}</span>
+      <span class="chip">${job.location || "Remoto"}</span>
+      <span class="chip">${salaryText}</span>
+      ${categories.map((c) => `<span class="chip ghost">${c}</span>`).join("")}
+    </div>
+    <div class="modal-description">${descHTML}</div>
+    <div class="modal-actions">
+      ${
+        job.url
+          ? `<a class="btn apply-link" href="${job.url}" target="_blank" rel="noopener noreferrer">Aplicar</a>`
+          : `<button class="btn" disabled>Link nao disponivel</button>`
+      }
+    </div>
+  `);
+  ui.modal.removeClass("hidden");
+}
+
+function closeModal() {
+  ui.modal?.addClass("hidden");
 }
 
 function fetchJobs() {
@@ -321,6 +342,7 @@ function fetchJobs() {
 
 $(function () {
   initUIRefs();
+  loadFavorites();
   fetchJobs();
 
   ui.list?.on("click", ".see-more", function (e) {
@@ -340,16 +362,27 @@ $(function () {
     }
   });
 
+  ui.list?.on("click", ".fav-toggle", function (e) {
+    e.stopPropagation();
+    const $btn = $(this);
+    const cardId = $btn.closest(".job-card").data("id");
+    if (state.favorites.has(cardId)) {
+      state.favorites.delete(cardId);
+    } else {
+      state.favorites.add(cardId);
+    }
+    saveFavorites();
+    updateList();
+  });
+
   ui.searchButton?.on("click", () => {
-    const term = ui.searchInput.val();
-    state.searchTerm = term;
+    state.searchTerm = ui.searchInput.val();
     state.visibleCount = 20;
     updateList();
   });
 
   ui.searchInput?.on("input", () => {
-    const term = ui.searchInput.val();
-    state.searchTerm = term;
+    state.searchTerm = ui.searchInput.val();
     state.visibleCount = 20;
     updateList();
   });

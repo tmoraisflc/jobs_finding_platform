@@ -177,6 +177,7 @@ body {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.04);
   background: rgba(255, 255, 255, 0.02);
+  position: relative;
 }
 
 .load-more-wrap {
@@ -337,6 +338,22 @@ body {
   color: var(--text);
   border: 1px solid rgba(124, 242, 156, 0.25);
   font-weight: 600;
+}
+
+.fav-toggle {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #ffd166;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.job-card.is-fav {
+  border-color: rgba(255, 209, 102, 0.35);
+  box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.2);
 }
 
 .job-desc {
