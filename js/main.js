@@ -10,6 +10,7 @@ const state = {
   visibleCount: 20,
   lastAutoLoadMs: 0,
   favorites: new Set(),
+  view: "all",
 };
 
 const ui = {
@@ -24,6 +25,7 @@ const ui = {
   modalTitle: null,
   modalCompany: null,
   modalBody: null,
+  viewButtons: null,
 };
 
 const format = {
@@ -84,6 +86,7 @@ function initUIRefs() {
   ui.modalTitle = $(".job-modal .modal-title");
   ui.modalCompany = $(".job-modal .modal-company");
   ui.modalBody = $(".job-modal .modal-body");
+  ui.viewButtons = $(".tab-btn");
 }
 
 function loadFavorites() {
@@ -228,7 +231,10 @@ function applyFilters(jobs) {
 }
 
 function updateList() {
-  const filtered = applyFilters(state.jobs);
+  let filtered = applyFilters(state.jobs);
+  if (state.view === "favs") {
+    filtered = filtered.filter((job) => state.favorites.has(job.id || job.url || job.title));
+  }
   const slice = filtered.slice(0, state.visibleCount);
   renderJobsBasic(slice);
 
@@ -416,5 +422,14 @@ $(function () {
 
   $(document).on("keyup", (e) => {
     if (e.key === "Escape") closeModal();
+  });
+
+  ui.viewButtons?.on("click", function () {
+    const view = $(this).data("view");
+    state.view = view;
+    ui.viewButtons.removeClass("active");
+    $(this).addClass("active");
+    state.visibleCount = 20;
+    updateList();
   });
 });

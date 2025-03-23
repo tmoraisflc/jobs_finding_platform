@@ -90,6 +90,9 @@ body {
 
 .controls {
   margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .search-filters {
@@ -370,6 +373,27 @@ body {
   padding: 4px 0;
   font-weight: 700;
   cursor: pointer;
+}
+
+.view-toggle {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.tab-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, var(--accent), var(--brand));
+  color: #0a1021;
+  border-color: transparent;
+  box-shadow: var(--shadow);
 }
 
 .is-populated {
