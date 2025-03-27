@@ -97,7 +97,7 @@ body {
 
 .search-filters {
   display: grid;
-  grid-template-columns: 2fr 1.4fr 1.2fr auto;
+  grid-template-columns: 2fr 1.4fr 1.1fr 1.2fr auto;
   gap: 12px;
   align-items: end;
 }

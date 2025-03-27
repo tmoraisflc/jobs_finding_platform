@@ -11,6 +11,7 @@ const state = {
   lastAutoLoadMs: 0,
   favorites: new Set(),
   view: "all",
+  sortKey: "date-desc",
 };
 
 const ui = {
@@ -26,6 +27,7 @@ const ui = {
   modalCompany: null,
   modalBody: null,
   viewButtons: null,
+  sortSelect: null,
 };
 
 const format = {
@@ -87,6 +89,7 @@ function initUIRefs() {
   ui.modalCompany = $(".job-modal .modal-company");
   ui.modalBody = $(".job-modal .modal-body");
   ui.viewButtons = $(".tab-btn");
+  ui.sortSelect = $("select[name='sort']");
 }
 
 function loadFavorites() {
@@ -230,8 +233,32 @@ function applyFilters(jobs) {
   return result;
 }
 
+function sortJobs(jobs) {
+  const arr = [...jobs];
+  if (state.sortKey === "date-asc" || state.sortKey === "date-desc") {
+    arr.sort((a, b) => {
+      const da = new Date(a.date).getTime() || 0;
+      const db = new Date(b.date).getTime() || 0;
+      return state.sortKey === "date-asc" ? da - db : db - da;
+    });
+  } else if (state.sortKey === "salary-desc" || state.sortKey === "salary-asc") {
+    const val = (job) => {
+      if (typeof job.salaryMax === "number") return job.salaryMax;
+      if (typeof job.salaryMin === "number") return job.salaryMin;
+      return -1;
+    };
+    arr.sort((a, b) => {
+      const va = val(a);
+      const vb = val(b);
+      return state.sortKey === "salary-asc" ? va - vb : vb - va;
+    });
+  }
+  return arr;
+}
+
 function updateList() {
   let filtered = applyFilters(state.jobs);
+  filtered = sortJobs(filtered);
   if (state.view === "favs") {
     filtered = filtered.filter((job) => state.favorites.has(job.id || job.url || job.title));
   }
@@ -429,6 +456,12 @@ $(function () {
     state.view = view;
     ui.viewButtons.removeClass("active");
     $(this).addClass("active");
+    state.visibleCount = 20;
+    updateList();
+  });
+
+  ui.sortSelect?.on("change", () => {
+    state.sortKey = ui.sortSelect.val();
     state.visibleCount = 20;
     updateList();
   });
