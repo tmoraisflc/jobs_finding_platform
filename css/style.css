@@ -181,6 +181,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.04);
   background: rgba(255, 255, 255, 0.02);
   position: relative;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
 .load-more-wrap {
@@ -334,6 +335,14 @@ body {
   font-weight: 600;
 }
 
+.job-location {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(124, 242, 156, 0.12);
+  border: 1px solid rgba(124, 242, 156, 0.2);
+  color: var(--text);
+}
+
 .job-type {
   padding: 4px 8px;
   border-radius: 999px;
@@ -357,6 +366,12 @@ body {
 .job-card.is-fav {
   border-color: rgba(255, 209, 102, 0.35);
   box-shadow: 0 0 0 1px rgba(255, 209, 102, 0.2);
+}
+
+.job-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(90, 209, 255, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
 }
 
 .job-desc {
