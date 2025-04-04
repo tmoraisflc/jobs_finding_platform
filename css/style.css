@@ -484,3 +484,30 @@ body {
 .hidden {
   display: none !important;
 }
+
+@media (max-width: 768px) {
+  .app-main {
+    padding: 22px 18px 40px;
+  }
+
+  .search-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .jobs-list {
+    grid-template-columns: 1fr;
+  }
+
+  .job-meta {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .modal-dialog {
+    width: 96vw;
+  }
+}
