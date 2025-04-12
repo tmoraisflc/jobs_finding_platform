@@ -195,10 +195,18 @@ body {
   display: flex;
   justify-content: center;
   margin-top: 16px;
+  gap: 12px;
 }
 
 .load-more {
   min-width: 180px;
+}
+
+.retry {
+  min-width: 160px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  box-shadow: none;
 }
 
 .job-modal {

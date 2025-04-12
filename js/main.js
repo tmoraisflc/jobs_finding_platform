@@ -22,6 +22,7 @@ const ui = {
   categorySelect: null,
   typeSelect: null,
   loadMoreBtn: null,
+  retryBtn: null,
   modal: null,
   modalTitle: null,
   modalCompany: null,
@@ -84,6 +85,7 @@ function initUIRefs() {
   ui.categorySelect = $("select[name='category']");
   ui.typeSelect = $("select[name='type']");
   ui.loadMoreBtn = $(".load-more");
+  ui.retryBtn = $(".retry");
   ui.modal = $(".job-modal");
   ui.modalTitle = $(".job-modal .modal-title");
   ui.modalCompany = $(".job-modal .modal-company");
@@ -353,6 +355,7 @@ function fetchJobs() {
   state.error = null;
   renderSkeletons();
   showPlaceholder("Carregando vagas remotas...", "loading");
+  ui.retryBtn?.addClass("hidden");
 
   $.getJSON(API_URL)
     .done((data) => {
@@ -366,6 +369,7 @@ function fetchJobs() {
     .fail((jqXHR, textStatus, errorThrown) => {
       state.error = errorThrown || textStatus || "Erro desconhecido";
       showPlaceholder("Erro ao carregar vagas. Tente novamente mais tarde.", "error");
+      ui.retryBtn?.removeClass("hidden");
       console.error("Falha ao buscar API Jobicy:", { textStatus, errorThrown, jqXHR });
     })
     .always(() => {
@@ -437,6 +441,11 @@ $(function () {
     updateList();
   });
 
+  ui.retryBtn?.on("click", () => {
+    if (state.loading) return;
+    fetchJobs();
+  });
+
   $(window).on("scroll", handleInfiniteScroll);
 
   ui.list?.on("click", ".job-card", function () {
@@ -464,5 +473,16 @@ $(function () {
     state.sortKey = ui.sortSelect.val();
     state.visibleCount = 20;
     updateList();
+  });
+
+  window.addEventListener("offline", () => {
+    showPlaceholder("Você está offline. Verifique a conexão.", "error");
+    ui.retryBtn?.removeClass("hidden");
+  });
+
+  window.addEventListener("online", () => {
+    if (!state.loading) {
+      fetchJobs();
+    }
   });
 });
