@@ -12,6 +12,7 @@ const state = {
   favorites: new Set(),
   view: "all",
   sortKey: "date-desc",
+  searchTimer: null,
 };
 
 const ui = {
@@ -76,6 +77,8 @@ const format = {
     return diffWeeks === 1 ? "ha 1 semana" : `ha ${diffWeeks} semanas`;
   },
 };
+
+const DEBOUNCE_MS = 220;
 
 function initUIRefs() {
   ui.placeholder = $(".placeholder");
@@ -244,14 +247,15 @@ function sortJobs(jobs) {
       return state.sortKey === "date-asc" ? da - db : db - da;
     });
   } else if (state.sortKey === "salary-desc" || state.sortKey === "salary-asc") {
-    const val = (job) => {
+    const val = (job, missingValue) => {
       if (typeof job.salaryMax === "number") return job.salaryMax;
       if (typeof job.salaryMin === "number") return job.salaryMin;
-      return -1;
+      return missingValue;
     };
     arr.sort((a, b) => {
-      const va = val(a);
-      const vb = val(b);
+      const missingValue = state.sortKey === "salary-asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+      const va = val(a, missingValue);
+      const vb = val(b, missingValue);
       return state.sortKey === "salary-asc" ? va - vb : vb - va;
     });
   }
@@ -364,7 +368,6 @@ function fetchJobs() {
       populateCategories(state.jobs);
       state.visibleCount = 20;
       updateList();
-      console.log("Jobs recebidos (preview):", state.jobs.slice(0, 3));
     })
     .fail((jqXHR, textStatus, errorThrown) => {
       state.error = errorThrown || textStatus || "Erro desconhecido";
@@ -421,7 +424,10 @@ $(function () {
   ui.searchInput?.on("input", () => {
     state.searchTerm = ui.searchInput.val();
     state.visibleCount = 20;
-    updateList();
+    if (state.searchTimer) clearTimeout(state.searchTimer);
+    state.searchTimer = setTimeout(() => {
+      updateList();
+    }, DEBOUNCE_MS);
   });
 
   ui.categorySelect?.on("change", () => {
